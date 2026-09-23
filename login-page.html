@@ -1,260 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codet Code</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Account portal with live Supabase announcements">
+  <title>Account Portal</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --bg: #0b1020;
+      --card: rgba(18, 25, 45, 0.94);
+      --card-2: #121a30;
+      --text: #f5f7fb;
+      --muted: #9da8bd;
+      --border: #29334d;
+      --accent: #4f8cff;
+      --accent-hover: #3b76df;
+      --danger: #e05252;
+      --success: #54c78b;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top, #182746 0%, transparent 45%),
+        var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #announcement-bar {
+      display: none;
+      width: 100%;
+      padding: 12px 20px;
+      background: #172d52;
+      border-bottom: 1px solid #31558c;
+      color: #dce9ff;
+      text-align: center;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(0,0,0,.18);
+    }
+
+    .container {
+      width: min(440px, calc(100% - 32px));
+      margin: auto;
+      padding: 28px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      backdrop-filter: blur(12px);
+    }
+
+    h1, h2 { margin-top: 0; }
+    h2 { text-align: center; }
+
+    .subtitle {
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+      margin: -8px 0 22px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px 14px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0d1426;
+      color: var(--text);
+      outline: none;
+      font: inherit;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,140,255,.12);
+    }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      padding: 13px 14px;
+      background: var(--accent);
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .15s ease;
+    }
+
+    button:hover { background: var(--accent-hover); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: #28334d;
+    }
+
+    .btn-secondary:hover {
+      background: #34415f;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+    }
+
+    .panel-box {
+      padding: 16px;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 10px;
+    }
+
+    .hidden { display: none !important; }
+
+    #status-msg {
+      margin-top: 20px;
+      padding: 12px;
+      min-height: 42px;
+      border-radius: 9px;
+      background: #0d1426;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .section-label {
+      display: block;
+      margin: 18px 0 7px;
+      color: #cbd3e4;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .full-width {
+      width: 100%;
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        padding: 22px;
+      }
+
+      .btn-group {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <div id="announcement-bar" role="status" aria-live="polite">
+    <span aria-hidden="true">📢 </span><span id="announcement-text"></span>
+  </div>
 
-    <!-- Real-time Live Announcement Banner -->
-    <div id="announcement-bar" role="alert">
-        🚀 <span id="announcement-text"></span>
+  <main class="container">
+    <!-- Login / Register -->
+    <section id="auth-zone">
+      <h2>Account Portal</h2>
+      <p class="subtitle">Users and administrators log in here.</p>
+
+      <input
+        type="email"
+        id="email"
+        autocomplete="email"
+        placeholder="Email address"
+      >
+
+      <input
+        type="password"
+        id="password"
+        autocomplete="current-password"
+        placeholder="Password"
+      >
+
+      <div class="btn-group">
+        <button id="loginBtn" type="button">Log In</button>
+        <button id="signupBtn" class="btn-secondary" type="button">Register</button>
+      </div>
+
+      <p class="small" style="margin-bottom:0;">
+        New accounts may need to verify their email before logging in.
+      </p>
+    </section>
+
+    <!-- User Dashboard -->
+    <section id="user-dashboard" class="hidden">
+      <h2>User Dashboard</h2>
+
+      <div class="panel-box">
+        <p>Welcome back, <strong id="user-email-display">Member</strong>!</p>
+        <p class="small">
+          Your Supabase session is active.
+        </p>
+      </div>
+
+      <br>
+      <button id="userLogoutBtn" class="btn-secondary full-width" type="button">
+        Sign Out
+      </button>
+    </section>
+
+    <!-- Admin Dashboard -->
+    <section id="admin-dashboard" class="hidden">
+      <h2>Admin Command Panel</h2>
+
+      <div class="panel-box" style="border-left-color:#ff9800; margin-bottom:20px;">
+        <p>
+          Logged in as administrator:
+          <strong id="admin-email-display">Admin</strong>
+        </p>
+      </div>
+
+      <label class="section-label" for="alertInput">
+        Live Global Announcement
+      </label>
+
+      <input
+        type="text"
+        id="alertInput"
+        maxlength="500"
+        placeholder="Type an announcement..."
+      >
+
+      <div class="btn-group">
+        <button id="broadcastBtn" type="button">Broadcast Live</button>
+        <button id="clearBtn" class="btn-secondary" type="button">Clear Banner</button>
+      </div>
+
+      <br>
+      <button id="adminLogoutBtn" class="btn-danger full-width" type="button">
+        Sign Out
+      </button>
+    </section>
+
+    <div id="status-msg" role="status" aria-live="polite">
+      [SYSTEM REPORT]: Starting...
     </div>
+  </main>
 
-    <!-- MAIN PORTAL APP CONTAINER -->
-    <div class="container">
-        
-        <!-- ZONE A: Auth Form (Login / Register) -->
-        <div id="auth-zone">
-            <h2 id="portal-title">Account Portal</h2>
-            <p style="font-size:12px; color:#aaa; text-align:center; margin-bottom:20px;">Users & Admins log in here</p>
-            
-            <input type="email" id="email" placeholder="Enter Email Address">
-            <input type="password" id="password" placeholder="Enter Password">
-            
-            <div class="btn-group">
-                <button id="loginBtn">Log In</button>
-                <button id="signupBtn" class="btn-secondary">Register Account</button>
-            </div>
-        </div>
-
-        <!-- ZONE B: Regular User Dashboard (Hidden by default) -->
-        <div id="user-dashboard" class="hidden">
-            <h2>User Dashboard</h2>
-            <div class="panel-box">
-                <p>Welcome back, <strong id="user-email-display">Member</strong>!</p>
-                <p style="color:#aaa; font-size:13px;">You have successfully verified your email and accessed the secure member zone.</p>
-            </div>
-            <br>
-            <button id="userLogoutBtn" class="btn-secondary" style="width:100%;">Sign Out</button>
-        </div>
-
-        <!-- ZONE C: Administrator Control Panel (Hidden by default) -->
-        <div id="admin-dashboard" class="hidden">
-            <h2>🛠️ Admin Command Panel</h2>
-            <div class="panel-box" style="border-left-color: #ff9800; margin-bottom: 20px;">
-                <p>Logged in as system administrator: <strong id="admin-email-display">Admin</strong></p>
-            </div>
-            
-            <label style="font-size: 13px; color: #ccc; display: block; margin-bottom: 5px;">Live Global Announcement Broadcast:</label>
-            <input type="text" id="alertInput" placeholder="Type banner alert message text here...">
-            
-            <div class="btn-group">
-                <button id="broadcastBtn">Broadcast Live</button>
-                <button id="clearBtn" class="btn-secondary">Clear Banner</button>
-            </div>
-            
-            <button id="adminLogoutBtn" class="btn-danger" style="width:100%;">Exit Admin Panel</button>
-        </div>
-
-        <!-- Live Interactive Diagnostic Screen Output -->
-        <div id="status-msg">[SYSTEM REPORT]: Initializing modern JS Engine modules...</div>
-    </div>
-
-    <!-- ⚡ Modern ESM Client Module for Safe Execution on Server Environments -->
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-        // ⚠️ PASTE YOUR REVEALED CONFIGURATION STRINGS HERE 
-        const SUPABASE_URL = "https://cuuzbgizggjmlezmysde.supabase.co"; 
-        const SUPABASE_ANON_KEY = "sb_publishable_8KSO1mR8gJnem_SG1O6oUw_m3tq-MIv"; 
-
-        // Change this email to whatever you want your official Admin Account email to be!
-        const ADMIN_EMAIL = "elijah.d.lohman@gmail.com"; 
-
-        let supabaseClient;
-        const statusBox = document.getElementById('status-msg');
-
-        function updateStatus(text, isError = true) {
-            statusBox.style.color = isError ? "#ff8888" : "#88ff88";
-            statusBox.textContent = `[SYSTEM REPORT]: ${text}`;
-        }
-
-        // Initialize Supabase Client Connection
-        try {
-            supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            updateStatus("Connection engine configured successfully! Ready.", false);
-        } catch (setupError) {
-            updateStatus(`Engine breakdown: ${setupError.message}`);
-        }
-
-        /* =========================================================
-           1. REAL-TIME STREAMING LISTENER (ANNOUNCEMENT BAR)
-           ========================================================= */
-        function handleUiUpdate(message) {
-            const bar = document.getElementById('announcement-bar');
-            const textSpan = document.getElementById('announcement-text');
-            if (message && message.trim() !== "") {
-                textSpan.textContent = message;
-                bar.style.display = 'block';
-            } else {
-                bar.style.display = 'none';
-            }
-        }
-
-        // Open direct network websocket connection channel to intercept table updates live
-        supabaseClient
-          .channel('schema-db-changes')
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'announcements' }, payload => {
-              handleUiUpdate(payload.new.message);
-          })
-          .subscribe();
-
-        // Download data footprint instantly on page render boot sequence
-        async function loadCurrentAlert() {
-            try {
-                const { data } = await supabaseClient.from('announcements').select('message').eq('id', 1).single();
-                if (data) handleUiUpdate(data.message);
-            } catch (err) { console.error("Initial load skipped:", err); }
-        }
-        loadCurrentAlert();
-
-
-        /* =========================================================
-           2. REGISTRATION & SIGN UP LOGIC (WITH EMAIL VERIFICATION)
-           ========================================================= */
-        async function handleSignUp() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-
-            if (!email || !password) return alert("Please fill out both email and password fields.");
-            updateStatus("Generating user workspace framework... Please wait.");
-
-            try {
-                const { data, error } = await supabaseClient.auth.signUp({ email, password });
-                
-                if (error) {
-                    updateStatus(`Registration Rejected: ${error.message}`);
-                    return;
-                }
-
-                // If user object returned but identities list empty, email is taken
-                if (data.user && data.user.identities && data.user.identities.length === 0) {
-                    updateStatus("This email is already registered! Attempt to login instead.");
-                } else {
-                    updateStatus("Success! Check your email inbox to activate your account before logging in.", false);
-                    alert("Registration successful! A verification link has been sent to your email inbox.");
-                    clearAuthInputs();
-                }
-            } catch (err) {
-                updateStatus(`Exception caught during account registration: ${err.message}`);
-            }
-        }
-
-
-        /* =========================================================
-           3. UNIFIED LOGIN ROUTER (USER VS ADMIN DETECTOR)
-           ========================================================= */
-        async function handleLogin() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-
-            if (!email || !password) return alert("Please fill out all credentials.");
-            updateStatus("Validating system authentication profile parameters...");
-
-            try {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                
-                if (error) {
-                    // Catches unverified accounts automatically if 'Confirm Email' rule is set to ON
-                    if (error.message.toLowerCase().includes("confirm")) {
-                        updateStatus("Access Blocked: You must locate your activation email and click the confirmation link first.");
-                    } else {
-                        updateStatus(`Access Denied: ${error.message}`);
-                    }
-                    return;
-                }
-
-                const user = data.user;
-                alert("Login approved! Swapping interfaces...");
-                clearAuthInputs();
-
-                // 🌐 INTERFACE ROUTING MATRIX BLOCK
-                document.getElementById('auth-zone').classList.add('hidden');
-                
-                if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-                    // User is the Admin - Route to Command Dash
-                    document.getElementById('admin-email-display').textContent = user.email;
-                    document.getElementById('admin-dashboard').classList.remove('hidden');
-                    updateStatus(`Admin Access Token Granted for session: ${user.email}`, false);
-                } else {
-                    // Regular User - Route to Profile View Home
-                    document.getElementById('user-email-display').textContent = user.email;
-                    document.getElementById('user-dashboard').classList.remove('hidden');
-                    updateStatus(`User Profile Session online: ${user.email}`, false);
-                }
-                
-            } catch (err) {
-                updateStatus(`Exception caught during user evaluation: ${err.message}`);
-            }
-        }
-
-
-        /* =========================================================
-           4. ADMIN ACTIONS (TABLE WRITE MANAGEMENT)
-           ========================================================= */
-        async function executeBroadcast(type) {
-            const textVal = (type === 'publish') ? document.getElementById('alertInput').value : "";
-            updateScreenStatusMsg("Transmitting live data payload to network layout...");
-            
-            try {
-                const { error } = await supabaseClient.from('announcements').update({ message: textVal }).eq('id', 1);
-                if (error) {
-                    updateStatus(`Database Block: ${error.message}`);
-                } else {
-                    updateStatus("Real-time node updated! Changes distributed to all live connected users.", false);
-                    if (type === 'clear') document.getElementById('alertInput').value = "";
-                }
-            } catch (err) {
-                updateStatus(`Payload execution failure: ${err.message}`);
-            }
-        }
-
-        function updateScreenStatusMsg(text) {
-            statusBox.style.color = "#0098ff";
-            statusBox.textContent = `[SYSTEM REPORT]: ${text}`;
-        }
-
-
-        /* =========================================================
-           5. SESSION CLOSURES (LOG OUT ACTIONS)
-           ========================================================= */
-        async function handleSignOut() {
-            updateStatus("Terminating token instances...");
-            await supabaseClient.auth.signOut();
-            
-            document.getElementById('admin-dashboard').classList.add('hidden');
-            document.getElementById('user-dashboard').classList.add('hidden');
-            document.getElementById('auth-zone').classList.remove('hidden');
-            
-            updateStatus("Logged out safely. Control interface reset.", false);
-        }
-
-        function clearAuthInputs() {
-            document.getElementById('email').value = "";
-            document.getElementById('password').value = "";
-        }
-
-        // Attach event listeners dynamically to preserve cross-origin compatibility
-        document.getElementById('loginBtn').addEventListener('click', handleLogin);
-        document.getElementById('signupBtn').addEventListener('click', handleSignUp);
-        document.getElementById('userLogoutBtn').addEventListener('click', handleSignOut);
-        document.getElementById('adminLogoutBtn').addEventListener('click', handleSignOut);
-        
-        document.getElementById('broadcastBtn').addEventListener('click', () => executeBroadcast('publish'));
-        document.getElementById('clearBtn').addEventListener('click', () => executeBroadcast('clear'));
-    </script>
+  <script type="module" src="login-auth.js"></script>
 </body>
 </html>
